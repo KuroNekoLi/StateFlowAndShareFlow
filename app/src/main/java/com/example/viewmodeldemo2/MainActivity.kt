@@ -19,9 +19,19 @@ class MainActivity : AppCompatActivity() {
         viewModelFactory = MainActivityViewModelFactory(125)
         viewModel = ViewModelProvider(this,viewModelFactory).get(MainActivityViewModel::class.java)
 
-        viewModel.totalData.observe(this, Observer {
-            binding.resultTextView.text = it.toString()
-        })
+//        viewModel.totalData.observe(this, Observer {
+//            binding.resultTextView.text = it.toString()
+//        })
+
+        //collect是一個懸掛函數，所以必須要在Coroutine使用它
+        //負責更新MutableStateFlow的類或代碼部分是生產者
+        //而從StateFlow中收集的所有類都是消費者。
+        //與使用flow建構器構建的冷流不同，StateFlow是一個熱流。
+        lifecycleScope.launchWhenCreated {
+            viewModel.floTotal.collect{
+                binding.resultTextView.text = it.toString()
+            }
+        }
 
         binding.insertButton.setOnClickListener {
             viewModel.setTotal(binding.inputEditText.text.toString().toInt())
